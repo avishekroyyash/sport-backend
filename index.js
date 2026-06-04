@@ -1,5 +1,5 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const dotenv = require('dotenv')
 const cors = require('cors')
@@ -38,7 +38,25 @@ app.get('/facility',async(req,res)=>{
     const result = await facilityCollection.find().limit(6).toArray()
     res.send(result)
 })
-    
+   // make post for add facility
+  app.post('/my-facility',async(req,res)=>{
+    const fcbody = req.body ;
+    const result = await facilityCollection.insertOne(fcbody)
+    res.send(result)
+  })   
+   // get the my facility
+   app.get('/my-facility',async(req,res)=>{
+    const id = req.params.id
+    const result = await facilityCollection.find().toArray()
+    res.send(result)
+   })
+    // get the id of my facility
+   app.get('/my-facility/:id',async(req,res)=>{
+    const id = req.params.id
+    const result = await facilityCollection.findOne({_id:new ObjectId(id)});
+    res.send(result)
+   })
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

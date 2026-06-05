@@ -2,7 +2,8 @@ const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const dotenv = require('dotenv')
-const cors = require('cors')
+const cors = require('cors');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 require('dotenv').config()
 const port = process.env.PORT 
 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 
 const uri =process.env.MONGO_URI
 
+
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -24,6 +26,34 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+// make a jwt token verification
+const JWKS = createRemoteJWKSet(
+      new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+)
+
+
+const verifyToken = async(req,res,next)=>{
+  // console.log(req.headers,'this is from verity token function')
+  const {authorization} = req?.headers;
+  if(!authorization){
+    return res.status(401).send({message:'Unauthorized'})
+  }
+  const token = authorization?.split(' ')[1]
+  if(!token){
+    return res.status(401).send({message:'Unauthorized'})
+  }
+  
+   try {
+    const { payload } = await jwtVerify(token, JWKS)
+     next()
+
+  } catch (error) {
+    return res.status(401).send({message:'Unauthorized'})
+  }
+
+}
+
 
 
 
@@ -61,7 +91,7 @@ app.get('/facility',async(req,res)=>{
     res.send(result)
    })
     // get the id of my facility
-   app.get('/my-facility/:id',async(req,res)=>{
+   app.get('/my-facility/:id',verifyToken ,async(req,res)=>{
     const id = req.params.id
     const result = await facilityCollection.findOne({_id:new ObjectId(id)});
     res.send(result)

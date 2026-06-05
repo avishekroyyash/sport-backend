@@ -56,6 +56,25 @@ app.get('/facility',async(req,res)=>{
     const result = await facilityCollection.findOne({_id:new ObjectId(id)});
     res.send(result)
    })
+   //delete the facility
+   app.delete('/my-facility/:id',async(req,res)=>{
+    const id= req.params.id
+    const result = await facilityCollection.deleteOne({_id:new ObjectId(id)})
+    res.send(result)
+   })
+   //edit my facility data 
+   app.patch('/my-facility/:id',async(req,res)=>{
+   const id = req.params.id
+   const fbody = req.body
+   const filter = {_id:new ObjectId(id)}
+   const updateDocument = {
+    $set:{
+      ...fbody
+    }
+   }
+   const result = await facilityCollection.updateOne(filter,updateDocument)
+   res.send(result)
+   })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

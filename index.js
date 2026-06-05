@@ -54,12 +54,19 @@ app.get('/facility',async(req,res)=>{
     const result = await facilityCollection.find().toArray()
     res.send(result)
    })
+   // get the data of login user of there own email and get own manage-facility
+   app.get('/my-facility/email/:email',async(req,res)=>{
+    const email = req.params.email
+    const result = await facilityCollection.find({userEmail:email}).toArray();
+    res.send(result)
+   })
     // get the id of my facility
    app.get('/my-facility/:id',async(req,res)=>{
     const id = req.params.id
     const result = await facilityCollection.findOne({_id:new ObjectId(id)});
     res.send(result)
    })
+   
    //delete the facility
    app.delete('/my-facility/:id',async(req,res)=>{
     const id= req.params.id
@@ -92,7 +99,20 @@ app.get('/facility',async(req,res)=>{
     const result = await bookingCollection.find().toArray()
     res.send(result)
   })
+  //this is get booking data for particuler user 
+  app.get('/my-booking/:userid',async(req,res)=>{
+  const userid=req.params.userid
+  console.log(userid,'this is from backend user id ')
+  const result=await bookingCollection.find({userId:userid}).toArray()
+  res.send(result)
+  })
 
+  // delete the booking facility
+  app.delete('/my-booking/:id',async(req,res)=>{
+   const id = req.params.id
+   const result = await bookingCollection.deleteOne({_id:new ObjectId(id)})
+   res.send(result)
+  })
 
 
     await client.db("admin").command({ ping: 1 });

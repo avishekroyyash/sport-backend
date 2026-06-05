@@ -33,11 +33,15 @@ async function run() {
     // Write the database and collection name
 const db = client.db('Sport_Project')
 const facilityCollection = db.collection('facility')
+const bookingCollection = db.collection('booking')
     // make route just for 6 card 
 app.get('/facility',async(req,res)=>{
     const result = await facilityCollection.find().limit(6).toArray()
     res.send(result)
 })
+
+
+
    // make post for add facility
   app.post('/my-facility',async(req,res)=>{
     const fcbody = req.body ;
@@ -75,6 +79,21 @@ app.get('/facility',async(req,res)=>{
    const result = await facilityCollection.updateOne(filter,updateDocument)
    res.send(result)
    })
+
+   
+  //this is booking facility post 
+  app.post('/my-booking',async(req,res)=>{
+    const Bbody = req.body
+    const result = await bookingCollection.insertOne(Bbody)
+    res.send(result)
+  }) 
+  //this is get booking facility data 
+  app.get('/my-booking',async(req,res)=>{
+    const result = await bookingCollection.find().toArray()
+    res.send(result)
+  })
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

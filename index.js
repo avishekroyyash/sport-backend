@@ -28,6 +28,7 @@ const client = new MongoClient(uri, {
 });
 
 // make a jwt token verification
+
 const JWKS = createRemoteJWKSet(
       new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
 )
@@ -78,14 +79,73 @@ app.get('/facility',async(req,res)=>{
     const result = await facilityCollection.insertOne(fcbody)
     res.send(result)
   })   
-   // get the my facility
-   app.get('/my-facility',async(req,res)=>{
-    const id = req.params.id
-    const result = await facilityCollection.find().toArray()
-    res.send(result)
-   })
+
+
+   // get the my all facility and emplement search
+  //  app.get('/my-facility',async(req,res)=>{
+  //   const search = req.query.search
+  //  console.log(search,'this is search server.js ')
+  //   let cursor ;
+  //   //this is for single search
+  //   // if(search){
+  //   // cursor = await facilityCollection.find({facilityName:{
+  //   //   $regex:search,
+  //   //   $options:'i',
+  //   // }})
+  //   // console.log(cursor,'this is search cursor')
+  //   // }
+  //   if(search){
+  //   cursor = await facilityCollection.find({
+  //     $or: [
+  //       {
+  //         facilityName: {
+  //           $regex:search,
+  //            $options:'i',
+  //         }
+  //      },
+  //      {
+  //         facilityType: {
+  //           $regex:search,
+  //            $options:'i',
+  //         }
+  //      },
+  //     ]
+  //   })
+  //   // console.log(cursor,'this is search cursor')
+  //   }
+  //   else{
+  //     cursor = facilityCollection.find()
+  //   }
+  //   const result = await cursor.toArray()
+  //   res.send(result)
+  //  })
+
+
+  app.get('/my-facility', async (req, res) => {
+  const search = req.query.search?.trim()
+
+  let cursor;
+  if (search) {
+    cursor = facilityCollection.find({
+      $or: [
+        { facilityName: { $regex: search, $options: 'i' } },
+        { facilityType: { $regex: search, $options: 'i' } },
+      ]
+    })
+  } else {
+    cursor = facilityCollection.find()
+  }
+
+  const result = await cursor.toArray()
+  res.send(result)
+})
+
+
+
+
+
    // get the data of login user of there own email and get own manage-facility
-   app.get('/my-facility/email/:email',async(req,res)=>{
+   app.get('/my-facility/email/:email',verifyToken,async(req,res)=>{
     const email = req.params.email
     const result = await facilityCollection.find({userEmail:email}).toArray();
     res.send(result)
@@ -104,7 +164,7 @@ app.get('/facility',async(req,res)=>{
     res.send(result)
    })
    //edit my facility data 
-   app.patch('/my-facility/:id',async(req,res)=>{
+   app.patch('/my-facility/:id',verifyToken,async(req,res)=>{
    const id = req.params.id
    const fbody = req.body
    const filter = {_id:new ObjectId(id)}
@@ -130,9 +190,9 @@ app.get('/facility',async(req,res)=>{
     res.send(result)
   })
   //this is get booking data for particuler user 
-  app.get('/my-booking/:userid',async(req,res)=>{
+  app.get('/my-booking/:userid',verifyToken,async(req,res)=>{
   const userid=req.params.userid
-  console.log(userid,'this is from backend user id ')
+  // console.log(userid,'this is from backend user id ')
   const result=await bookingCollection.find({userId:userid}).toArray()
   res.send(result)
   })
